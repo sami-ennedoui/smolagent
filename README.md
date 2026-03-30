@@ -65,3 +65,5 @@ Given a raw text snippet from a UART peripheral datasheet, the agent automatical
 - [ ] **PDF Parsing Tool:** Integrate `PyMuPDF` to allow the agent to read raw component datasheets directly.
 - [ ] **CAN Bus Matrix Automation:** Expand the agent to ingest `.dbc` or Excel CAN matrices to automatically generate C-structs and bit-masking logic for Automotive/BMS applications.
 - [ ] **Verilog Testbench Generation:** Add custom tools for FPGA workflows to auto-generate Icarus Verilog testbenches from SystemVerilog module definitions.
+### Note
+This has been devolopped and tested for Fedora Linux Workstation version 43.
