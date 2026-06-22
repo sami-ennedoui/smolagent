@@ -1,69 +1,121 @@
-# 🤖 Embedded AI Agent: Datasheet-to-C Generator
+# Datasheet-to-C header generator
 
-An autonomous AI agent that parses microcontroller datasheet memory maps and automatically generates production-ready C header files (`.h`) for bare-metal embedded systems. 
+Generate C register-address headers from microcontroller datasheet excerpts. You
+give it a register map, in text or PDF, and it produces a `.h` file with the base
+address and every register address as a `#define`.
 
-This project bridges the gap between Large Language Models (LLMs) and hardware engineering, demonstrating how AI agents can automate tedious firmware development tasks like register configuration and memory mapping.
+The design keeps the language model away from anything safety critical. A
+hallucinated register address can brick hardware, so the address arithmetic and
+validation are always done in plain Python, never by the model.
 
-## ✨ Features
-- **Autonomous Tool Use:** The agent uses Hugging Face `smolagents` to reason through datasheet text, calculate absolute hex addresses, and execute custom Python file-writing tools.
-- **Zero-Compute Cloud Execution:** Powered by the `Qwen2.5-Coder-32B` model via the Hugging Face Serverless Inference API (requires no local GPU).
-- **Secure Containerization:** Fully containerized using **Podman** (daemonless) and Python 3.12, ensuring a reproducible, secure, and isolated execution environment free of local dependency conflicts.
+> Note. This deterministic core has been reused in a larger project. The genuinely
+> agentic version, where a `smolagents` agent searches the STM32H7 reference manual
+> and drafts a page-cited register header, lives in
+> [sami-ennedoui/stm32-datasheet-rag](https://github.com/sami-ennedoui/stm32-datasheet-rag)
+> (`app/agent.py` and `app/regtools.py`). This repository keeps the standalone
+> command line tool.
 
-## 🛠️ Tech Stack
-- **Framework:** Hugging Face `smolagents`
-- **Model:** `Qwen2.5-Coder-32B-Instruct`
-- **Environment:** Podman / Docker, Python 3.12
-- **Security:** `python-dotenv` for API secret management
+## How it works
 
-## 🚀 Quick Start
+There are two paths to extract the register map:
 
-### 1. Prerequisites
-- [Podman](https://podman.io/) (or Docker) installed on your system.
-- A free Hugging Face API token.
+- A deterministic parser that recognises common register-map text patterns with
+  regular expressions. This is the default and needs no network or token.
+- An optional `smolagents` extraction mode for messy text. Here the model only
+  returns structured data, register names and offsets relative to the base. It
+  does not compute absolute addresses and does not write files.
 
-### 2. Setup
-Clone the repository and navigate into the project directory:
+In both paths the same Python code validates the names as C identifiers, rejects
+conflicting duplicates, computes each absolute address as base plus offset, and
+renders the header.
+
+## Features
+
+- Parses base addresses written as `0x4000_2000`, `0x4001 3800`, or `4004_A04Ch`.
+- Parses register maps in `NAME 0xOFFSET`, `0xOFFSET NAME`, and `Address offset: 0x..` styles.
+- Expands alias registers such as `UARTRSR/UARTECR`.
+- Deduplicates repeated same-offset entries and rejects conflicting duplicate register names.
+- Renders deterministic C headers with include guards, hex addresses, and optional macro prefixes.
+- Reads text files directly, and PDF files when PyMuPDF is installed.
+
+## Quick start
+
+Run from the repository, no token needed for the deterministic path:
+
 ```bash
-git clone https://github.com/YOUR_USERNAME/embedded-ai-agent.git
-cd embedded-ai-agent
+python -m datasheet_to_header tests/fixtures/synthetic_uart.txt --name UART -o uart_regs.h
 ```
 
-Create a `.env` file in the root directory and add your Hugging Face token (do not use quotation marks):
-```env
-HF_TOKEN=hf_your_token_here
-```
-*(Note: `.env` is included in `.gitignore` to prevent leaking credentials.)*
+Or print to stdout:
 
-### 3. Build the Container
-Build the daemonless container image:
+```bash
+python -m datasheet_to_header tests/fixtures/stm32_usart1_excerpt.txt --stdout --no-base
+```
+
+## Example output
+
+```c
+#ifndef UART_REGS_H
+#define UART_REGS_H
+
+#define UART_BASE  0x40002000u
+#define UART_DR    0x40002000u
+#define UART_SR    0x40002004u
+#define UART_BRR   0x40002008u
+#define UART_CR1   0x4000200Cu
+
+#endif /* UART_REGS_H */
+```
+
+## Optional agent mode
+
+Agent mode helps when the deterministic parser cannot read a messy table. It needs
+a free Hugging Face token in `HF_TOKEN`:
+
+```bash
+export HF_TOKEN=hf_your_token_here
+python -m datasheet_to_header datasheet_excerpt.txt --use-agent -o regs.h
+```
+
+The model is used only to extract structured data. The project validates register
+names, offsets, duplicates, and the C header output locally.
+
+## Tested datasheet fixtures
+
+The test suite includes small excerpts based on public vendor documentation:
+
+- STMicroelectronics STM32F103 RM0008 USART register map
+- Microchip SAM D21/DA1 SERCOM USART register summary
+- Raspberry Pi RP2040 UART register list
+- NXP KL25 PORT memory map example
+
+Run the tests:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+## Container
+
+Build:
+
 ```bash
 podman build -t hardware-agent .
 ```
 
-### 4. Run the Agent
-Run the container. We map a volume (`-v`) with the `:Z` SELinux flag so the agent can safely export the generated `.h` file directly to your local host directory:
+Run against a mounted repository, passing the input file:
+
 ```bash
-podman run --env-file .env -v "$(pwd):/app:Z" hardware-agent
+podman run --rm -v "$(pwd):/work:Z" hardware-agent \
+  /work/tests/fixtures/synthetic_uart.txt --name UART -o /work/uart_regs.h
 ```
 
-## 📄 Example Output
-Given a raw text snippet from a UART peripheral datasheet, the agent automatically calculates the offset math and generates `uart_regs.h`:
+Use Docker by replacing `podman` with `docker`, and drop `:Z` if your platform
+does not use SELinux labels.
 
-```c
-#ifndef __UART_REGS_H__
-#define __UART_REGS_H__
+## Scope
 
-#define UART_DR         0x40002000
-#define UART_SR         0x40002004
-#define UART_BRR        0x40002008
-#define UART_CR1        0x4000200c
+This is an assistant, not a certified generator. Always confirm the generated
+addresses against the official datasheet before using them on hardware.
 
-#endif /* __UART_REGS_H__ */
-```
-
-## 🔮 Future Roadmap
-- [ ] **PDF Parsing Tool:** Integrate `PyMuPDF` to allow the agent to read raw component datasheets directly.
-- [ ] **CAN Bus Matrix Automation:** Expand the agent to ingest `.dbc` or Excel CAN matrices to automatically generate C-structs and bit-masking logic for Automotive/BMS applications.
-- [ ] **Verilog Testbench Generation:** Add custom tools for FPGA workflows to auto-generate Icarus Verilog testbenches from SystemVerilog module definitions.
-### Note
-This has been devolopped and tested for Fedora Linux Workstation version 43.
+Developed and tested on Fedora Linux Workstation 43.
