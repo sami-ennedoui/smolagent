@@ -1,0 +1,20 @@
+Source: Raspberry Pi RP2040 datasheet, UART register list.
+Public URL: https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf
+
+UART0 base address is 0x40034000
+
+Offset Name Description
+0x000 UARTDR Data Register
+0x004 UARTRSR/UARTECR Receive Status Register/Error Clear Register
+0x018 UARTFR Flag Register
+0x020 UARTILPR IrDA Low-Power Counter Register
+0x024 UARTIBRD Integer Baud Rate Register
+0x028 UARTFBRD Fractional Baud Rate Register
+0x02C UARTLCR_H Line Control Register
+0x030 UARTCR Control Register
+0x034 UARTIFLS Interrupt FIFO Level Select Register
+0x038 UARTIMSC Interrupt Mask Set/Clear Register
+0x03C UARTRIS Raw Interrupt Status Register
+0x040 UARTMIS Masked Interrupt Status Register
+0x044 UARTICR Interrupt Clear Register
+0x048 UARTDMACR DMA Control Register

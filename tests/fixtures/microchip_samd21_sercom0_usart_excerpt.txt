@@ -1,0 +1,20 @@
+Source: Microchip SAM D21/DA1 Family data sheet, SERCOM USART register summary.
+Public URL: https://ww1.microchip.com/downloads/en/DeviceDoc/SAM-D21-DA1-Family-Data-Sheet-DS40001882H.pdf
+
+SERCOM0 base address: 0x42000800
+
+USART mode register summary
+Offset Name
+0x00 CTRLA Control A
+0x04 CTRLB Control B
+0x08 CTRLC Control C
+0x0C BAUD Baud
+0x0C BAUD Baud fractional mode
+0x0E RXPL Receive pulse length
+0x14 INTENCLR Interrupt enable clear
+0x16 INTENSET Interrupt enable set
+0x18 INTFLAG Interrupt flag status and clear
+0x1A STATUS Status
+0x1C SYNCBUSY Synchronization busy
+0x28 DATA Data
+0x30 DBGCTRL Debug control

@@ -1,0 +1,7 @@
+UART Peripheral Memory Map:
+Base Address: 0x4000_2000
+Registers:
+- UART_DR (Data Register): Offset 0x00
+- UART_SR (Status Register): Offset 0x04
+- UART_BRR (Baud Rate Register): Offset 0x08
+- UART_CR1 (Control Register 1): Offset 0x0C

@@ -1,0 +1,9 @@
+Source: NXP KL25 Sub-Family reference manual, PORT memory map example.
+Public URL: https://www.nxp.com/docs/en/reference-manual/KL25P80M48SF0RM.pdf
+
+PORTB base address: 4004_A000h
+
+4004_A000h Pin Control Register n (PORTB_PCR0)
+4004_A004h Pin Control Register n (PORTB_PCR1)
+4004_A048h Pin Control Register n (PORTB_PCR18)
+4004_A04Ch Pin Control Register n (PORTB_PCR19)

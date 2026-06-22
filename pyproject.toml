@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "datasheet-to-header"
+version = "0.1.0"
+description = "Generate C register headers from microcontroller datasheet excerpts."
+requires-python = ">=3.10"
+dependencies = [
+  "smolagents==1.8.1",
+  "python-dotenv",
+  "PyMuPDF>=1.24",
+]
+
+[project.scripts]
+datasheet-to-header = "datasheet_to_header.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["datasheet_to_header*"]

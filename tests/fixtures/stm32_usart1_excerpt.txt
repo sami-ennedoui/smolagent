@@ -1,0 +1,14 @@
+Source: STMicroelectronics RM0008 reference manual for STM32F101/F102/F103/F105/F107 MCUs.
+Public URL: https://www.st.com/resource/en/reference_manual/rm0008-stm32f103xx-advanced-armbased-32bit-mcus-stmicroelectronics.pdf
+
+USART1 base address: 0x4001 3800
+
+USART register map
+Register Offset
+USART_SR 0x00
+USART_DR 0x04
+USART_BRR 0x08
+USART_CR1 0x0C
+USART_CR2 0x10
+USART_CR3 0x14
+USART_GTPR 0x18
